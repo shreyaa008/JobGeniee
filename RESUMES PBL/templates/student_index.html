@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobGenie — Student Predictor</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple:     #6C63FF;
+      --purple-dk:  #5A52D5;
+      --teal:       #43B89C;
+      --coral:      #FF6584;
+      --amber:      #F7C59F;
+      --bg:         #F4F6FB;
+      --card:       #FFFFFF;
+      --text:       #1E1E2E;
+      --muted:      #6B7280;
+      --border:     #E5E7EB;
+      --radius:     12px;
+      --shadow:     0 4px 24px rgba(108,99,255,.10);
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg);
+           color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    header { background: linear-gradient(135deg, var(--purple), #9B5DE5);
+             color: #fff; text-align: center; padding: 36px 20px 28px; }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header p  { opacity: .85; margin-top: 6px; font-size: .95rem; }
+
+    /* ── Progress bar ── */
+    .progress-wrap { background: #fff; border-bottom: 1px solid var(--border);
+                     padding: 14px 0; position: sticky; top: 0; z-index: 10; }
+    .progress-inner { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+    .steps { display: flex; gap: 6px; align-items: center; }
+    .step  { flex: 1; display: flex; flex-direction: column; align-items: center;
+             gap: 4px; cursor: default; }
+    .step-dot { width: 28px; height: 28px; border-radius: 50%;
+                background: var(--border); color: var(--muted);
+                display: flex; align-items: center; justify-content: center;
+                font-weight: 700; font-size: .8rem; transition: .3s; }
+    .step.active .step-dot  { background: var(--purple); color: #fff; }
+    .step.done   .step-dot  { background: var(--teal);   color: #fff; }
+    .step-label { font-size: .7rem; color: var(--muted); font-weight: 500;
+                  text-align: center; }
+    .step.active .step-label { color: var(--purple); font-weight: 700; }
+    .step-line  { flex: 1; height: 2px; background: var(--border); margin-bottom: 14px; }
+    .step-line.done { background: var(--teal); }
+
+    /* ── Layout ── */
+    main { max-width: 760px; margin: 30px auto; padding: 0 20px 60px; }
+
+    /* ── Section panels ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Card ── */
+    .card { background: var(--card); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 28px; margin-bottom: 20px; }
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px;
+                  color: var(--purple); display: flex; align-items: center; gap: 8px; }
+    .card-title span { font-size: 1.3rem; }
+
+    /* ── Form elements ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: .85rem; font-weight: 600; color: var(--muted); }
+    input[type=number], select {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; font-size: .95rem; color: var(--text);
+      background: #FAFAFA; transition: border .2s;
+      width: 100%;
+    }
+    input[type=number]:focus, select:focus {
+      outline: none; border-color: var(--purple); background: #fff; }
+
+    /* ── Skills grid ── */
+    .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .skill-chip { display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+                  border: 1.5px solid var(--border); border-radius: 8px;
+                  cursor: pointer; transition: all .2s; font-size: .85rem;
+                  font-weight: 500; background: #FAFAFA; user-select: none; }
+    .skill-chip:hover   { border-color: var(--purple); background: #F0EEFF; }
+    .skill-chip.selected { border-color: var(--purple); background: #EDE9FF;
+                           color: var(--purple); font-weight: 700; }
+    .skill-chip input { display: none; }
+    .skill-badge { font-size: .65rem; padding: 2px 6px; border-radius: 20px;
+                   font-weight: 700; margin-left: auto; }
+    .adv  { background: #EDE9FF; color: var(--purple); }
+    .mid  { background: #DCFCE7; color: #166534; }
+    .bas  { background: #FEF9C3; color: #854D0E; }
+
+    /* ── Aptitude test ── */
+    .q-card { background: var(--bg); border-radius: 10px; padding: 20px;
+              margin-bottom: 14px; border: 1.5px solid var(--border); }
+    .q-text { font-weight: 600; margin-bottom: 14px; font-size: .95rem; line-height: 1.5; }
+    .q-options { display: flex; flex-direction: column; gap: 8px; }
+    .q-opt { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+             border: 1.5px solid var(--border); border-radius: 8px;
+             cursor: pointer; transition: all .2s; font-size: .9rem;
+             background: var(--card); }
+    .q-opt:hover   { border-color: var(--purple); background: #F0EEFF; }
+    .q-opt.correct { border-color: var(--teal);   background: #ECFDF5; color: #065F46; font-weight: 700; }
+    .q-opt.wrong   { border-color: var(--coral);  background: #FFF1F2; color: #9F1239; }
+    .q-opt.show-correct { border-color: var(--teal); background: #ECFDF5; }
+    .aptitude-progress { font-size: .85rem; color: var(--muted); margin-bottom: 16px; font-weight: 600; }
+    .apt-score-box { text-align: center; padding: 20px;
+                     background: linear-gradient(135deg,#EDE9FF,#DCFCE7);
+                     border-radius: 10px; margin-bottom: 16px; }
+    .apt-score-num { font-size: 3rem; font-weight: 800; color: var(--purple); }
+    .apt-score-label { font-size: .9rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+    .btn { padding: 12px 28px; border-radius: 8px; font-weight: 700;
+           font-size: .95rem; cursor: pointer; border: none; transition: all .2s; }
+    .btn-primary { background: var(--purple); color: #fff; flex: 1; }
+    .btn-primary:hover { background: var(--purple-dk); transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg); color: var(--muted);
+                     border: 1.5px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+    /* ── Error ── */
+    .error-msg { color: var(--coral); font-size: .85rem; font-weight: 600;
+                 margin-top: 10px; display: none; }
+
+    /* ── Loading ── */
+    .loading { text-align: center; padding: 40px; display: none; }
+    .spinner { width: 48px; height: 48px; border: 4px solid var(--border);
+               border-top-color: var(--purple); border-radius: 50%;
+               animation: spin .8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media(max-width: 560px) {
+      .form-grid   { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: repeat(2, 1fr); }
+      header h1    { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎓 JobGenie</h1>
+  <p>AI-powered salary & job role predictor for students</p>
+</header>
+
+<!-- Progress bar -->
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="steps">
+      <div class="step active" id="st1">
+        <div class="step-dot">1</div>
+        <div class="step-label">Profile</div>
+      </div>
+      <div class="step-line" id="sl1"></div>
+      <div class="step" id="st2">
+        <div class="step-dot">2</div>
+        <div class="step-label">Skills</div>
+      </div>
+      <div class="step-line" id="sl2"></div>
+      <div class="step" id="st3">
+        <div class="step-dot">3</div>
+        <div class="step-label">Aptitude</div>
+      </div>
+      <div class="step-line" id="sl3"></div>
+      <div class="step" id="st4">
+        <div class="step-dot">4</div>
+        <div class="step-label">Result</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ── SECTION 1: Profile ── -->
+  <div class="section active" id="sec1">
+    <div class="card">
+      <div class="card-title"><span>📋</span> Academic Profile</div>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>College Tier</label>
+          <select id="college_tier">
+            <option value="">Select tier</option>
+            <option value="Tier 1">Tier 1 (IIT / NIT / BITS)</option>
+            <option value="Tier 2">Tier 2 (State engineering colleges)</option>
+            <option value="Tier 3">Tier 3 (Private / other colleges)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>CGPA (4.0 – 10.0)</label>
+          <input type="number" id="cgpa" min="4" max="10" step="0.01" placeholder="e.g. 7.8">
+        </div>
+
+        <div class="form-group">
+          <label>Internships done</label>
+          <input type="number" id="internships" min="0" max="10" placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label>GitHub projects</label>
+          <input type="number" id="github_projects" min="0" max="30" placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label>Active backlogs</label>
+          <input type="number" id="backlogs" min="0" max="20" placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label>Hackathons participated</label>
+          <input type="number" id="hackathons" min="0" max="20" placeholder="0">
+        </div>
+
+        <div class="form-group full">
+          <label>Certifications completed</label>
+          <input type="number" id="certifications" min="0" max="20" placeholder="0">
+        </div>
+
+      </div>
+      <p class="error-msg" id="err1">Please fill all fields correctly.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goTo(2)">Next: Select Skills →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: Skills ── -->
+  <div class="section" id="sec2">
+    <div class="card">
+      <div class="card-title"><span>💻</span> Select Your Skills</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">
+        Select all skills you are comfortable working with.
+        <span style="color:var(--coral);font-weight:700;">Select at least 1.</span>
+      </p>
+
+      <p style="font-size:.8rem;font-weight:600;margin-bottom:10px;color:var(--muted);">
+        <span style="background:#EDE9FF;color:var(--purple);padding:2px 8px;border-radius:20px;font-size:.7rem;">ADV</span> Advanced &nbsp;
+        <span style="background:#DCFCE7;color:#166534;padding:2px 8px;border-radius:20px;font-size:.7rem;">MID</span> Intermediate &nbsp;
+        <span style="background:#FEF9C3;color:#854D0E;padding:2px 8px;border-radius:20px;font-size:.7rem;">BAS</span> Basic
+      </p>
+
+      <div class="skills-grid" id="skillsGrid"></div>
+
+      <p class="error-msg" id="err2">Please select at least one skill.</p>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(3)">Next: Aptitude Test →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: Aptitude ── -->
+  <div class="section" id="sec3">
+    <div class="card">
+      <div class="card-title"><span>🧠</span> Aptitude Test</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px;">
+        Answer all 10 questions. Your score is used in the salary prediction.
+      </p>
+      <div id="aptitudeContainer"></div>
+      <p class="error-msg" id="err3">Answer all questions before submitting.</p>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goTo(2)">← Back</button>
+        <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">
+          🔮 Predict My Career
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="loading" id="loadingDiv">
+    <div class="spinner"></div>
+    <p style="font-weight:600;color:var(--purple);">Analysing your profile…</p>
+    <p style="font-size:.85rem;color:var(--muted);margin-top:6px;">Running AI models</p>
+  </div>
+
+</main>
+
+<script>
+// ── Skills data ───────────────────────────────────────────────────────────────
+const SKILLS = [
+  { name: 'DSA',             cat: 'adv', label: 'ADV' },
+  { name: 'Machine Learning',cat: 'adv', label: 'ADV' },
+  { name: 'Deep Learning',   cat: 'adv', label: 'ADV' },
+  { name: 'TensorFlow',      cat: 'adv', label: 'ADV' },
+  { name: 'PyTorch',         cat: 'adv', label: 'ADV' },
+  { name: 'Python',          cat: 'mid', label: 'MID' },
+  { name: 'Java',            cat: 'mid', label: 'MID' },
+  { name: 'React',           cat: 'mid', label: 'MID' },
+  { name: 'AWS',             cat: 'mid', label: 'MID' },
+  { name: 'Docker',          cat: 'mid', label: 'MID' },
+  { name: 'Node.js',         cat: 'mid', label: 'MID' },
+  { name: 'Django',          cat: 'mid', label: 'MID' },
+  { name: 'Excel',           cat: 'bas', label: 'BAS' },
+  { name: 'SQL',             cat: 'bas', label: 'BAS' },
+  { name: 'HTML/CSS',        cat: 'bas', label: 'BAS' },
+  { name: 'JavaScript',      cat: 'bas', label: 'BAS' },
+  { name: 'Git',             cat: 'bas', label: 'BAS' },
+  { name: 'Linux',           cat: 'bas', label: 'BAS' },
+];
+
+// ── Aptitude question bank (difficulty: easy / medium / hard) ─────────────────
+// 10 questions are picked randomly each time: 3 easy + 4 medium + 3 hard
+const QUESTION_BANK = {
+  easy: [
+    { q: "If a train travels 120 km in 2 hours, what is its speed in km/h?",
+      opts: ["40","50","60","70"], ans: 2, diff: "easy" },
+    { q: "What is 15% of 400?",
+      opts: ["55","60","65","70"], ans: 1, diff: "easy" },
+    { q: "A shopkeeper buys an item for ₹200 and sells it for ₹250. What is the profit percentage?",
+      opts: ["20%","25%","30%","15%"], ans: 1, diff: "easy" },
+    { q: "If A is taller than B, and C is taller than A, who is the tallest?",
+      opts: ["A","B","C","Cannot determine"], ans: 2, diff: "easy" },
+    { q: "What is the next number in the series: 1, 4, 9, 16, 25, ?",
+      opts: ["30","36","49","32"], ans: 1, diff: "easy" },
+    { q: "A car covers 300 km in 5 hours. What is its average speed?",
+      opts: ["50 km/h","55 km/h","60 km/h","65 km/h"], ans: 2, diff: "easy" },
+    { q: "What is 20% of 250?",
+      opts: ["40","45","50","55"], ans: 2, diff: "easy" },
+    { q: "If today is Monday, what day will it be after 15 days?",
+      opts: ["Monday","Tuesday","Wednesday","Thursday"], ans: 1, diff: "easy" },
+    { q: "Find the odd one out: 2, 3, 5, 7, 9, 11",
+      opts: ["2","9","5","11"], ans: 1, diff: "easy" },
+    { q: "A rectangle has length 8 cm and width 5 cm. What is its area?",
+      opts: ["13 cm²","26 cm²","40 cm²","45 cm²"], ans: 2, diff: "easy" },
+    { q: "If 6 apples cost ₹90, what do 10 apples cost?",
+      opts: ["₹130","₹140","₹150","₹160"], ans: 2, diff: "easy" },
+    { q: "What is the value of 12 × 12 − 44?",
+      opts: ["96","98","100","104"], ans: 2, diff: "easy" },
+  ],
+  medium: [
+    { q: "What comes next in the series: 2, 6, 12, 20, 30, ?",
+      opts: ["40","42","44","48"], ans: 1, diff: "medium" },
+    { q: "A project takes 10 days when 5 workers work on it. How many days will 2 workers take?",
+      opts: ["20","25","30","4"], ans: 1, diff: "medium" },
+    { q: "Find the odd one out: 36, 49, 64, 81, 100, 112",
+      opts: ["49","81","100","112"], ans: 3, diff: "medium" },
+    { q: "A clock shows 3:00. What is the angle between the hour and minute hands?",
+      opts: ["60°","75°","90°","120°"], ans: 2, diff: "medium" },
+    { q: "If MANGO is coded as NBNHP, what is the code for APPLE?",
+      opts: ["BQRMF","BQQMF","CQQNF","BQQLF"], ans: 0, diff: "medium" },
+    { q: "A train 200 m long passes a pole in 10 seconds. What is the speed of the train?",
+      opts: ["15 m/s","20 m/s","25 m/s","30 m/s"], ans: 1, diff: "medium" },
+    { q: "If 3x + 7 = 22, what is x?",
+      opts: ["3","4","5","6"], ans: 2, diff: "medium" },
+    { q: "A pipe fills a tank in 6 hours. Another pipe drains it in 8 hours. If both are open, how long to fill the tank?",
+      opts: ["18 hrs","20 hrs","24 hrs","28 hrs"], ans: 2, diff: "medium" },
+    { q: "In a group of 70 people, 37 like coffee and 52 like tea. How many like both, if everyone likes at least one?",
+      opts: ["15","17","19","21"], ans: 2, diff: "medium" },
+    { q: "What is the next term in the series: 3, 8, 15, 24, 35, ?",
+      opts: ["45","46","47","48"], ans: 3, diff: "medium" },
+    { q: "If 8 men can build a wall in 12 days, how many days will 6 men take to build the same wall?",
+      opts: ["14","15","16","18"], ans: 2, diff: "medium" },
+    { q: "A man sells an article at 10% profit. If cost price is ₹500, what is the selling price?",
+      opts: ["₹540","₹545","₹550","₹560"], ans: 2, diff: "medium" },
+    { q: "Two numbers are in ratio 3:5. Their sum is 96. What is the larger number?",
+      opts: ["56","60","62","66"], ans: 1, diff: "medium" },
+    { q: "How many times do the hands of a clock coincide in 24 hours?",
+      opts: ["20","22","24","44"], ans: 1, diff: "medium" },
+  ],
+  hard: [
+    { q: "In a class of 40 students, 60% passed in Maths and 70% passed in Science. What is the minimum number who passed in both?",
+      opts: ["10","12","14","16"], ans: 0, diff: "hard" },
+    { q: "A cistern has a leak which empties it in 8 hours. A tap fills it at 6 litres/min. If the cistern is 2160 litres, find the time to fill it if the tap is also on.",
+      opts: ["6 hrs","8 hrs","12 hrs","Cannot be filled"], ans: 3, diff: "hard" },
+    { q: "If log₂8 + log₂4 = log₂x, what is x?",
+      opts: ["16","32","64","128"], ans: 1, diff: "hard" },
+    { q: "A sum of money doubles in 5 years at simple interest. In how many years will it become 4 times?",
+      opts: ["10","15","20","25"], ans: 1, diff: "hard" },
+    { q: "A and B can complete a task in 12 and 18 days respectively. They work together for 4 days then A leaves. How many more days does B need?",
+      opts: ["6","8","10","12"], ans: 2, diff: "hard" },
+    { q: "The speed of a boat in still water is 15 km/h. Stream speed is 3 km/h. A man rows 18 km downstream and returns. Total time taken?",
+      opts: ["2 hrs","2.5 hrs","3 hrs","3.5 hrs"], ans: 1, diff: "hard" },
+    { q: "In how many ways can the letters of the word 'LEADER' be arranged?",
+      opts: ["360","720","1080","2160"], ans: 0, diff: "hard" },
+    { q: "The average of 5 numbers is 27. If one number is excluded the average becomes 25. What is the excluded number?",
+      opts: ["30","33","35","37"], ans: 3, diff: "hard" },
+    { q: "A merchant marks goods 30% above cost price and gives a 10% discount. What is the profit percentage?",
+      opts: ["15%","17%","19%","21%"], ans: 1, diff: "hard" },
+    { q: "If the sum of first n natural numbers is 210, what is n?",
+      opts: ["18","19","20","21"], ans: 2, diff: "hard" },
+    { q: "Two trains start from cities A and B towards each other at 60 km/h and 80 km/h. They are 280 km apart. When will they meet?",
+      opts: ["1 hr","2 hrs","1.5 hrs","2.5 hrs"], ans: 1, diff: "hard" },
+    { q: "Find x: 2^(x+1) + 2^x = 96",
+      opts: ["4","5","6","7"], ans: 1, diff: "hard" },
+  ],
+};
+
+// Pick 3 easy + 4 medium + 3 hard questions randomly every time
+function pickQuestions() {
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  const easy   = shuffle(QUESTION_BANK.easy).slice(0, 3);
+  const medium = shuffle(QUESTION_BANK.medium).slice(0, 4);
+  const hard   = shuffle(QUESTION_BANK.hard).slice(0, 3);
+  // Interleave: easy, medium, hard mixed (not all easy first)
+  return shuffle([...easy, ...medium, ...hard]);
+}
+
+// Active questions for this session (regenerated when aptitude section loads)
+let QUESTIONS = pickQuestions();
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedSkills = new Set();
+let answers        = {};
+let revealed       = {};
+let aptitudeScore  = 0;
+
+// ── Build skills grid ─────────────────────────────────────────────────────────
+function buildSkills() {
+  const grid = document.getElementById('skillsGrid');
+  grid.innerHTML = '';
+  SKILLS.forEach(s => {
+    const chip = document.createElement('label');
+    chip.className = 'skill-chip';
+    chip.innerHTML = `
+      <input type="checkbox" value="${s.name}">
+      ${s.name}
+      <span class="skill-badge ${s.cat}">${s.label}</span>`;
+    chip.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) { selectedSkills.add(s.name); chip.classList.add('selected'); }
+      else                   { selectedSkills.delete(s.name); chip.classList.remove('selected'); }
+    });
+    grid.appendChild(chip);
+  });
+}
+
+// ── Build aptitude questions ───────────────────────────────────────────────────
+function buildAptitude() {
+  // Fresh random set every time the aptitude section is entered
+  QUESTIONS = pickQuestions();
+
+  const container = document.getElementById('aptitudeContainer');
+  container.innerHTML = '';
+  answers  = {};
+  revealed = {};
+
+  // Difficulty badge styles
+  const diffMeta = {
+    easy:   { label: 'Easy',   bg: '#DCFCE7', color: '#166534' },
+    medium: { label: 'Medium', bg: '#FEF9C3', color: '#854D0E' },
+    hard:   { label: 'Hard',   bg: '#FFF1F2', color: '#9F1239' },
+  };
+
+  QUESTIONS.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `qcard${qi}`;
+
+    // Header row: "Question X of 10" + difficulty badge
+    const prog = document.createElement('div');
+    prog.className = 'aptitude-progress';
+    prog.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+    const dm = diffMeta[q.diff] || diffMeta.medium;
+    prog.innerHTML = `
+      <span>Question ${qi+1} of ${QUESTIONS.length}</span>
+      <span style="font-size:.68rem;font-weight:700;padding:2px 10px;border-radius:20px;
+                   background:${dm.bg};color:${dm.color};">${dm.label}</span>`;
+
+    const qtext = document.createElement('div');
+    qtext.className = 'q-text';
+    qtext.textContent = q.q;
+
+    const opts = document.createElement('div');
+    opts.className = 'q-options';
+
+    q.opts.forEach((opt, oi) => {
+      const btn = document.createElement('div');
+      btn.className = 'q-opt';
+      btn.textContent = `${String.fromCharCode(65+oi)}.  ${opt}`;
+      btn.onclick = () => selectAnswer(qi, oi, btn, card, q.ans);
+      opts.appendChild(btn);
+    });
+
+    card.appendChild(prog);
+    card.appendChild(qtext);
+    card.appendChild(opts);
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(qi, oi, btn, card, correctIdx) {
+  if (revealed[qi]) return;
+  revealed[qi] = true;
+  answers[qi]  = oi;
+
+  const allOpts = card.querySelectorAll('.q-opt');
+  allOpts.forEach((o, i) => {
+    if (i === correctIdx) o.classList.add(oi === correctIdx ? 'correct' : 'show-correct');
+    else if (i === oi)    o.classList.add('wrong');
+    o.style.cursor = 'default';
+  });
+}
+
+function calcAptitude() {
+  let score = 0;
+  QUESTIONS.forEach((q, i) => { if (answers[i] === q.ans) score++; });
+  return Math.round((score / QUESTIONS.length) * 100);
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function goTo(step) {
+  // Validate current step
+  if (step === 2) {
+    if (!validateProfile()) return;
+  }
+  if (step === 3) {
+    if (selectedSkills.size === 0) {
+      document.getElementById('err2').style.display = 'block';
+      return;
+    }
+    document.getElementById('err2').style.display = 'none';
+    // Rebuild with a fresh random set every time the aptitude section is entered
+    buildAptitude();
+  }
+
+  // Update sections
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`sec${step}`).classList.add('active');
+
+  // Update step indicators
+  for (let i = 1; i <= 4; i++) {
+    const st = document.getElementById(`st${i}`);
+    st.classList.remove('active','done');
+    if (i < step)  st.classList.add('done');
+    if (i === step) st.classList.add('active');
+    if (i < 4) {
+      const sl = document.getElementById(`sl${i}`);
+      sl.classList.toggle('done', i < step);
+    }
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validateProfile() {
+  const tier  = document.getElementById('college_tier').value;
+  const cgpa  = parseFloat(document.getElementById('cgpa').value);
+  const err   = document.getElementById('err1');
+
+  const fields = ['internships','github_projects','backlogs','hackathons','certifications'];
+  const allFilled = fields.every(f => document.getElementById(f).value !== '');
+
+  if (!tier || isNaN(cgpa) || cgpa < 4 || cgpa > 10 || !allFilled) {
+    err.style.display = 'block';
+    return false;
+  }
+  err.style.display = 'none';
+  return true;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+async function submitForm() {
+  const unanswered = QUESTIONS.length - Object.keys(answers).length;
+  if (unanswered > 0) {
+    document.getElementById('err3').style.display = 'block';
+    document.getElementById('err3').textContent =
+      `Please answer all questions (${unanswered} remaining).`;
+    return;
+  }
+  document.getElementById('err3').style.display = 'none';
+
+  aptitudeScore = calcAptitude();
+
+  // Show loading
+  document.getElementById('sec3').style.display   = 'none';
+  document.getElementById('loadingDiv').style.display = 'block';
+
+  const payload = {
+    college_tier:    document.getElementById('college_tier').value,
+    cgpa:            parseFloat(document.getElementById('cgpa').value),
+    internships:     parseInt(document.getElementById('internships').value)     || 0,
+    github_projects: parseInt(document.getElementById('github_projects').value) || 0,
+    backlogs:        parseInt(document.getElementById('backlogs').value)        || 0,
+    hackathons:      parseInt(document.getElementById('hackathons').value)      || 0,
+    certifications:  parseInt(document.getElementById('certifications').value)  || 0,
+    aptitude_score:  aptitudeScore,
+    skills:          Array.from(selectedSkills),
+  };
+
+  try {
+    const res  = await fetch('/api/student/predict', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // Store result and redirect
+    sessionStorage.setItem('jobgenie_result',  JSON.stringify(data));
+    sessionStorage.setItem('jobgenie_profile', JSON.stringify(payload));
+    window.location.href = '/student/result';
+
+  } catch (err) {
+    document.getElementById('loadingDiv').style.display = 'none';
+    document.getElementById('sec3').style.display       = 'block';
+    document.getElementById('err3').style.display       = 'block';
+    document.getElementById('err3').textContent         = 'Error: ' + err.message;
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildSkills();
+buildAptitude();
+</script>
+</body>
+</html>

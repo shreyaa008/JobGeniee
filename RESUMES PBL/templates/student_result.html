@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobGenie — Your Results</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --purple:  #6C63FF; --purple-dk: #5A52D5; --teal: #43B89C;
+      --coral:   #FF6584; --amber: #F7C59F;
+      --bg:      #F4F6FB; --card: #FFFFFF;
+      --text:    #1E1E2E; --muted: #6B7280; --border: #E5E7EB;
+      --radius:  12px;    --shadow: 0 4px 24px rgba(108,99,255,.10);
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif;
+           background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, var(--purple), #9B5DE5);
+             color: #fff; text-align: center; padding: 28px 20px 22px; }
+    header h1 { font-size: 1.6rem; font-weight: 700; }
+    header p  { opacity: .85; margin-top: 4px; font-size: .9rem; }
+
+    main { max-width: 800px; margin: 28px auto; padding: 0 20px 60px; }
+
+    /* ── Hero cards ── */
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+                 margin-bottom: 20px; }
+    .hero-card { background: var(--card); border-radius: var(--radius);
+                 box-shadow: var(--shadow); padding: 24px; text-align: center;
+                 border-top: 4px solid transparent; }
+    .hero-card.salary { border-color: var(--purple); }
+    .hero-card.role   { border-color: var(--teal);   }
+    .hero-label { font-size: .8rem; font-weight: 700; color: var(--muted);
+                  text-transform: uppercase; letter-spacing: .8px; }
+    .hero-value { font-size: 2.4rem; font-weight: 800; margin: 8px 0 4px;
+                  line-height: 1; }
+    .salary .hero-value { color: var(--purple); }
+    .role   .hero-value { color: var(--teal);   font-size: 1.6rem; }
+    .hero-sub { font-size: .82rem; color: var(--muted); }
+
+    /* ── Generic card ── */
+    .card { background: var(--card); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 24px; margin-bottom: 18px; }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--purple);
+                  display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+    .card-title span { font-size: 1.2rem; }
+
+    /* ── Role confidence bars ── */
+    .role-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .role-name { font-weight: 600; font-size: .9rem; min-width: 160px; }
+    .role-bar-wrap { flex: 1; background: var(--bg); border-radius: 20px; height: 12px; overflow: hidden; }
+    .role-bar { height: 100%; border-radius: 20px;
+                background: linear-gradient(90deg, var(--purple), #9B5DE5);
+                transition: width 1s ease; width: 0; }
+    .role-bar.second { background: linear-gradient(90deg, var(--teal), #5DE5C5); }
+    .role-bar.third  { background: linear-gradient(90deg, var(--amber), #F7A55F); }
+    .role-pct { font-size: .82rem; font-weight: 700; color: var(--muted);
+                min-width: 42px; text-align: right; }
+
+    /* ── Aptitude score ── */
+    .apt-ring-wrap { display: flex; align-items: center; gap: 24px; }
+    .ring-svg { flex-shrink: 0; }
+    .ring-info h3  { font-size: 1.5rem; font-weight: 800; color: var(--purple); }
+    .ring-info p   { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Profile summary chips ── */
+    .profile-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+    .prof-chip { background: var(--bg); border-radius: 10px; padding: 12px;
+                 text-align: center; border: 1.5px solid var(--border); }
+    .prof-val  { font-size: 1.4rem; font-weight: 800; color: var(--purple); }
+    .prof-key  { font-size: .72rem; color: var(--muted); font-weight: 600;
+                 margin-top: 2px; }
+
+    /* ── Improvements ── */
+    .imp-item { display: flex; gap: 12px; align-items: flex-start;
+                padding: 12px 14px; border-radius: 8px; margin-bottom: 10px;
+                border: 1.5px solid var(--border); }
+    .imp-icon  { font-size: 1.2rem; flex-shrink: 0; }
+    .imp-text  { font-size: .88rem; line-height: 1.5; }
+    .imp-badge { font-size: .65rem; font-weight: 700; padding: 2px 8px;
+                 border-radius: 20px; margin-bottom: 4px; display: inline-block; }
+    .high   { background: #FFF1F2; border-color: #FECDD3; }
+    .high   .imp-badge { background: #FFF1F2; color: #9F1239; border: 1px solid #FECDD3; }
+    .medium { background: #FFFBEB; border-color: #FDE68A; }
+    .medium .imp-badge { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+    .low    { background: #F0FDF4; border-color: #BBF7D0; }
+    .low    .imp-badge { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+
+    /* ── Button ── */
+    .btn-row { display: flex; gap: 12px; justify-content: center; margin-top: 28px; }
+    .btn { padding: 13px 32px; border-radius: 8px; font-weight: 700;
+           font-size: .95rem; cursor: pointer; border: none; }
+    .btn-primary { background: var(--purple); color: #fff; }
+    .btn-primary:hover { background: var(--purple-dk); }
+    .btn-secondary { background: var(--bg); color: var(--muted);
+                     border: 1.5px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+
+    /* ── No data fallback ── */
+    .no-data { text-align: center; padding: 80px 20px; }
+    .no-data h2 { color: var(--muted); margin-bottom: 12px; }
+
+    @media(max-width:560px) {
+      .hero-grid    { grid-template-columns: 1fr; }
+      .profile-grid { grid-template-columns: repeat(2,1fr); }
+      .role-name    { min-width: 110px; font-size: .8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎓 JobGenie — Your Results</h1>
+  <p>AI-powered career prediction based on your profile</p>
+</header>
+
+<main id="mainContent">
+  <div class="no-data" id="noData" style="display:none;">
+    <h2>No result data found</h2>
+    <p style="color:var(--muted);margin-bottom:20px;">Please fill the form first.</p>
+    <a href="/"><button class="btn btn-primary">← Go to Form</button></a>
+  </div>
+</main>
+
+<script>
+const result  = JSON.parse(sessionStorage.getItem('jobgenie_result')  || 'null');
+const profile = JSON.parse(sessionStorage.getItem('jobgenie_profile') || 'null');
+
+if (!result || !profile) {
+  document.getElementById('noData').style.display = 'block';
+} else {
+  buildResults();
+}
+
+function buildResults() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+
+  // ── Hero ────────────────────────────────────────────────────────────────────
+  const heroGrid = el('div', 'hero-grid');
+  heroGrid.innerHTML = `
+    <div class="hero-card salary">
+      <div class="hero-label">Predicted Salary</div>
+      <div class="hero-value">₹${result.predicted_salary_lpa} LPA</div>
+      <div class="hero-sub">Annual package estimate</div>
+    </div>
+    <div class="hero-card role">
+      <div class="hero-label">Best Job Role</div>
+      <div class="hero-value">${result.predicted_role}</div>
+      <div class="hero-sub">Based on your skills & profile</div>
+    </div>`;
+  main.appendChild(heroGrid);
+
+  // ── Role confidence ─────────────────────────────────────────────────────────
+  const roleCard = el('div', 'card');
+  roleCard.innerHTML = `<div class="card-title"><span>🎯</span> Job Role Confidence</div>`;
+  const classes = ['', 'second', 'third'];
+  result.top_roles.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.className = 'role-row';
+    row.innerHTML = `
+      <div class="role-name">${i===0?'🥇':i===1?'🥈':'🥉'} ${r.role}</div>
+      <div class="role-bar-wrap">
+        <div class="role-bar ${classes[i]}" id="bar${i}" style="width:0%"></div>
+      </div>
+      <div class="role-pct">${r.confidence}%</div>`;
+    roleCard.appendChild(row);
+  });
+  main.appendChild(roleCard);
+
+  // Animate bars after paint
+  setTimeout(() => {
+    result.top_roles.forEach((r, i) => {
+      const b = document.getElementById(`bar${i}`);
+      if (b) b.style.width = r.confidence + '%';
+    });
+  }, 100);
+
+  // ── Aptitude score ──────────────────────────────────────────────────────────
+  const aptScore = profile.aptitude_score;
+  const aptCard  = el('div', 'card');
+  const radius   = 40; const circ = 2 * Math.PI * radius;
+  const dash     = circ * (aptScore / 100);
+  aptCard.innerHTML = `
+    <div class="card-title"><span>🧠</span> Aptitude Score</div>
+    <div class="apt-ring-wrap">
+      <svg class="ring-svg" width="110" height="110" viewBox="0 0 110 110">
+        <circle cx="55" cy="55" r="${radius}" fill="none"
+                stroke="#E5E7EB" stroke-width="10"/>
+        <circle cx="55" cy="55" r="${radius}" fill="none"
+                stroke="#6C63FF" stroke-width="10"
+                stroke-dasharray="${dash} ${circ}"
+                stroke-dashoffset="${circ/4}"
+                stroke-linecap="round"/>
+        <text x="55" y="60" text-anchor="middle"
+              font-size="18" font-weight="800" fill="#6C63FF">${aptScore}</text>
+      </svg>
+      <div class="ring-info">
+        <h3>${aptScore}/100</h3>
+        <p>${aptScore>=75?'Excellent aptitude score!':aptScore>=50?'Good score — room to improve.':'Focus on improving aptitude.'}</p>
+        <p style="margin-top:8px;font-size:.8rem;color:#9CA3AF;">
+          ${aptScore>=75?'Top 25% of candidates':aptScore>=50?'Average range':'Below average range'}
+        </p>
+      </div>
+    </div>`;
+  main.appendChild(aptCard);
+
+  // ── Profile summary ─────────────────────────────────────────────────────────
+  const profCard = el('div', 'card');
+  profCard.innerHTML = `<div class="card-title"><span>📋</span> Your Profile Summary</div>`;
+  const chips = [
+    { val: profile.cgpa,            key: 'CGPA'          },
+    { val: profile.internships,     key: 'Internships'   },
+    { val: profile.github_projects, key: 'Projects'      },
+    { val: profile.hackathons,      key: 'Hackathons'    },
+    { val: profile.certifications,  key: 'Certifications'},
+    { val: profile.backlogs,        key: 'Backlogs'      },
+    { val: profile.college_tier,    key: 'College Tier'  },
+    { val: profile.skills.length,   key: 'Skills'        },
+  ];
+  const pg = el('div','profile-grid');
+  chips.forEach(c => {
+    pg.innerHTML += `<div class="prof-chip">
+      <div class="prof-val">${c.val}</div>
+      <div class="prof-key">${c.key}</div>
+    </div>`;
+  });
+  profCard.appendChild(pg);
+
+  // Skills selected
+  const skillWrap = el('div','');
+  skillWrap.style.cssText = 'margin-top:16px;';
+  skillWrap.innerHTML = `<p style="font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:8px;">SKILLS SELECTED</p>`;
+  const skillFlex = el('div','');
+  skillFlex.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+  profile.skills.forEach(s => {
+    skillFlex.innerHTML += `<span style="background:#EDE9FF;color:#5A52D5;padding:4px 12px;
+      border-radius:20px;font-size:.78rem;font-weight:700;">${s}</span>`;
+  });
+  skillWrap.appendChild(skillFlex);
+  profCard.appendChild(skillWrap);
+  main.appendChild(profCard);
+
+  // ── Improvements ────────────────────────────────────────────────────────────
+  const impCard = el('div','card');
+  impCard.innerHTML = `<div class="card-title"><span>🚀</span> Personalised Improvements</div>`;
+
+  const icons = { high: '🔴', medium: '🟡', low: '🟢' };
+  const labels = { high: 'HIGH PRIORITY', medium: 'MEDIUM PRIORITY', low: 'LOW PRIORITY' };
+
+  // Sort: high first, then medium, then low
+  const sorted = [...result.improvements].sort((a,b) => {
+    const order = { high: 0, medium: 1, low: 2 };
+    return order[a.priority] - order[b.priority];
+  });
+
+  if (sorted.length === 0) {
+    impCard.innerHTML += `<p style="color:var(--muted);font-size:.9rem;">
+      No improvements needed — excellent profile!</p>`;
+  } else {
+    sorted.forEach(imp => {
+      impCard.innerHTML += `
+        <div class="imp-item ${imp.priority}">
+          <div class="imp-icon">${icons[imp.priority]}</div>
+          <div>
+            <div class="imp-badge">${labels[imp.priority]}</div>
+            <div class="imp-text">${imp.message}</div>
+          </div>
+        </div>`;
+    });
+  }
+  main.appendChild(impCard);
+
+  // ── Buttons ─────────────────────────────────────────────────────────────────
+  const btnRow = el('div','btn-row');
+  btnRow.innerHTML = `
+    <a href="/"><button class="btn btn-secondary">← Predict Again</button></a>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Save as PDF</button>`;
+  main.appendChild(btnRow);
+}
+
+function el(tag, cls) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  return e;
+}
+</script>
+</body>
+</html>

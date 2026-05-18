@@ -1,0 +1,143 @@
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #1a1a1a; line-height: 1.5; }
+
+/* ── Layout ── */
+.container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+.main { padding: 2.5rem 0 4rem; }
+
+/* ── Header ── */
+.header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: .875rem 0; position: sticky; top: 0; z-index: 10; }
+.header-inner { display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: .5rem; }
+.logo-icon { font-size: 1.1rem; color: #2563eb; }
+.logo-text { font-size: 1rem; font-weight: 600; color: #111; }
+.header-sub { font-size: .8rem; color: #888; }
+.back-btn { font-size: .85rem; color: #2563eb; text-decoration: none; border: 1px solid #dbeafe; padding: .35rem .85rem; border-radius: 6px; }
+.back-btn:hover { background: #eff6ff; }
+
+/* ── Page title ── */
+.page-title { margin-bottom: 2rem; }
+.page-title h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: .4rem; }
+.page-title p  { font-size: .9rem; color: #666; }
+
+/* ── Form sections ── */
+.screen-form { display: flex; flex-direction: column; gap: 1.75rem; }
+.form-section { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; }
+.section-label { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #888; margin-bottom: 1rem; }
+
+/* ── Upload area ── */
+.upload-area { border: 2px dashed #d1d5db; border-radius: 8px; padding: 2.5rem 1rem; text-align: center; cursor: pointer; position: relative; transition: border-color .2s, background .2s; }
+.upload-area:hover, .upload-area.drag-over { border-color: #2563eb; background: #eff6ff; }
+.file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-icon { font-size: 2rem; color: #aaa; margin-bottom: .5rem; }
+.upload-text { font-size: .95rem; font-weight: 500; color: #444; }
+.upload-sub  { font-size: .8rem; color: #999; margin-top: .25rem; }
+.file-list   { margin-top: 1rem; text-align: left; }
+.file-count  { font-size: .8rem; font-weight: 600; color: #2563eb; margin-bottom: .4rem; }
+.file-item   { font-size: .82rem; color: #555; padding: .2rem 0; display: flex; align-items: center; gap: .4rem; }
+.file-icon   { color: #aaa; }
+
+/* ── Skill tag input ── */
+.tag-input-wrap { border: 1px solid #e0e0e0; border-radius: 8px; padding: .5rem .75rem; min-height: 44px; display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; cursor: text; transition: border-color .2s; }
+.tag-input-wrap:focus-within { border-color: #2563eb; }
+.tag-container { display: flex; flex-wrap: wrap; gap: .35rem; }
+.chip { display: inline-flex; align-items: center; gap: .3rem; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 20px; padding: .2rem .7rem; font-size: .82rem; font-weight: 500; }
+.chip-remove { cursor: pointer; font-size: .75rem; opacity: .7; }
+.chip-remove:hover { opacity: 1; }
+.tag-typer { border: none; outline: none; font-size: .88rem; flex: 1; min-width: 160px; background: transparent; color: #111; }
+.input-hint { font-size: .78rem; color: #999; margin-top: .4rem; }
+kbd { font-size: .72rem; background: #f3f4f6; border: 1px solid #ddd; border-radius: 3px; padding: 0 4px; }
+
+/* ── Quick skills ── */
+.quick-skills { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .75rem; align-items: center; }
+.quick-label  { font-size: .78rem; color: #aaa; }
+.quick-btn    { font-size: .78rem; padding: .2rem .65rem; border-radius: 20px; border: 1px solid #e0e0e0; background: #fafafa; color: #555; cursor: pointer; transition: background .15s, border-color .15s; }
+.quick-btn:hover { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+
+/* ── Filters grid ── */
+.filters-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.filter-item  { display: flex; flex-direction: column; gap: .4rem; }
+.filter-label { font-size: .8rem; font-weight: 500; color: #555; }
+.number-input { border: 1px solid #e0e0e0; border-radius: 7px; padding: .6rem .85rem; font-size: .9rem; outline: none; width: 100%; }
+.number-input:focus { border-color: #2563eb; }
+
+/* ── Submit button ── */
+.submit-btn { background: #2563eb; color: #fff; border: none; border-radius: 8px; padding: .85rem 2rem; font-size: .95rem; font-weight: 500; cursor: pointer; width: 100%; transition: background .2s; }
+.submit-btn:hover { background: #1d4ed8; }
+
+/* ── Summary bar ── */
+.summary-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+.summary-item { background: #fff; border: 1px solid #e5e5e5; border-radius: 9px; padding: 1rem 1.25rem; }
+.summary-val  { display: block; font-size: 1.4rem; font-weight: 600; color: #111; }
+.summary-lbl  { display: block; font-size: .75rem; color: #888; margin-top: 2px; }
+
+/* ── Score bar (horizontal ranked list) ── */
+.score-list { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden; }
+.score-list-header { display: grid; grid-template-columns: 40px 1fr 90px 90px 90px; gap: 8px; padding: .6rem 1.25rem; background: #f9fafb; border-bottom: 1px solid #e5e5e5; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #aaa; }
+.score-list-row { display: grid; grid-template-columns: 40px 1fr 90px 90px 90px; gap: 8px; padding: .7rem 1.25rem; border-bottom: 1px solid #f0f0f0; align-items: center; font-size: .85rem; }
+.score-list-row:last-child { border-bottom: none; }
+.score-list-row:hover { background: #fafafa; }
+.row-rank { font-weight: 700; color: #2563eb; font-size: .9rem; }
+.row-name { font-weight: 500; color: #111; }
+.row-role { font-size: .78rem; color: #888; }
+
+/* ── Required skills row ── */
+.skills-row { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-bottom: 1.5rem; }
+.skills-row-label { font-size: .8rem; color: #888; margin-right: .25rem; }
+
+/* ── Results header ── */
+.results-header { margin-bottom: 1rem; }
+.results-header h2 { font-size: 1.1rem; font-weight: 600; }
+
+/* ── Candidate card ── */
+.candidate-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; }
+.card-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.rank-badge { width: 36px; height: 36px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; flex-shrink: 0; }
+.candidate-meta { flex: 1; }
+.candidate-name { font-size: 1rem; font-weight: 600; color: #111; }
+.candidate-sub  { font-size: .82rem; color: #888; margin-top: 2px; }
+.score-block { text-align: center; flex-shrink: 0; }
+.score-val  { font-size: 1.5rem; font-weight: 700; }
+.score-lbl  { font-size: .72rem; color: #aaa; margin-top: 1px; }
+.score-high { color: #16a34a; }
+.score-mid  { color: #d97706; }
+.score-low  { color: #dc2626; }
+
+/* ── Score bar inside card ── */
+.score-bar-wrap { margin-bottom: 1.25rem; }
+.score-bar-bg { background: #f0f0f0; border-radius: 4px; height: 6px; }
+.score-bar-fill { height: 6px; border-radius: 4px; transition: width .4s; }
+
+/* ── Details grid ── */
+.details-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: 1rem; }
+.detail-item  { display: flex; flex-direction: column; gap: 2px; }
+.detail-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: #aaa; }
+.detail-val   { font-size: .85rem; color: #333; word-break: break-word; }
+
+/* ── Skills section ── */
+.skills-section { border-top: 1px solid #f0f0f0; padding-top: .9rem; }
+.skills-section-label { font-size: .75rem; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; }
+.skills-wrap { display: flex; flex-wrap: wrap; gap: .35rem; }
+.skill-tag      { font-size: .78rem; padding: .2rem .65rem; border-radius: 20px; background: #f3f4f6; color: #555; border: 1px solid #e5e5e5; }
+.skill-required { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+.skill-matched  { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+
+/* ── Score explanation ── */
+.score-explain { font-size: .78rem; color: #999; margin-top: .5rem; }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 4rem 2rem; }
+.empty-icon  { font-size: 3rem; margin-bottom: 1rem; }
+.empty-title { font-size: 1.1rem; font-weight: 600; margin-bottom: .4rem; }
+.empty-sub   { font-size: .88rem; color: #888; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .filters-grid { grid-template-columns: 1fr; }
+  .summary-bar  { grid-template-columns: repeat(2, 1fr); }
+  .details-grid { grid-template-columns: repeat(2, 1fr); }
+  .score-list-header, .score-list-row { grid-template-columns: 36px 1fr 70px; }
+  .score-list-header span:nth-child(4), .score-list-header span:nth-child(5),
+  .score-list-row span:nth-child(4),   .score-list-row span:nth-child(5) { display: none; }
+}

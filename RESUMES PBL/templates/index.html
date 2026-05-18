@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resume Screening System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">&#9776;</span>
+          <span class="logo-text">JobGenie</span>
+        </div>
+        <span class="header-sub">AI-powered candidate ranking</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+
+      <div class="page-title">
+        <h1>Screen Candidates</h1>
+        <p>Upload resumes and set your requirements. The system will parse, score, and rank candidates automatically.</p>
+      </div>
+
+      <form action="/api/recruiter/screen" method="POST" enctype="multipart/form-data" class="screen-form">
+
+        <!-- 1. Upload -->
+        <div class="form-section">
+          <div class="section-label">1. Upload Resumes</div>
+          <div class="upload-area" id="uploadArea">
+            <input type="file" name="resumes" id="resumeInput" multiple accept=".pdf" class="file-input">
+            <div class="upload-icon">&#8679;</div>
+            <div class="upload-text">Click to upload or drag PDFs here</div>
+            <div class="upload-sub">PDF files only — multiple files supported</div>
+            <div id="fileList" class="file-list"></div>
+          </div>
+        </div>
+
+        <!-- 2. Skills with tag chips -->
+        <div class="form-section">
+          <div class="section-label">2. Required Skills</div>
+          <div class="tag-input-wrap" id="tagWrap">
+            <div id="tagContainer" class="tag-container"></div>
+            <input
+              type="text"
+              id="skillTyper"
+              class="tag-typer"
+              placeholder="Type a skill and press Enter or comma..."
+              autocomplete="off"
+            >
+          </div>
+          <input type="hidden" name="skills" id="skillsHidden">
+          <div class="input-hint">
+            Press <kbd>Enter</kbd> or <kbd>,</kbd> to add a skill. Click tag to remove.
+            Leave empty to auto-detect from resumes.
+          </div>
+          <div class="quick-skills">
+            <span class="quick-label">Quick add:</span>
+            {% set suggestions = ["Python","Java","React","Django","AWS","Docker","SQL","Machine Learning","Node.js","Flutter"] %}
+            {% for s in suggestions %}
+              <button type="button" class="quick-btn" onclick="addSkill('{{s}}')">+ {{s}}</button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 3. Filters -->
+        <div class="form-section">
+          <div class="section-label">3. Filters</div>
+          <div class="filters-grid">
+            <div class="filter-item">
+              <label class="filter-label">Min Experience (yrs)</label>
+              <input type="number" name="min_exp" value="0" min="0" max="30" step="0.5" class="number-input">
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">Min Salary (₹)</label>
+              <input type="number" name="min_salary" value="200000" min="0" step="50000" class="number-input">
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">Max Salary (₹)</label>
+              <input type="number" name="max_salary" value="1000000" min="0" step="50000" class="number-input">
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">Show Top N</label>
+              <input type="number" name="top_n" value="10" min="1" max="50" class="number-input">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          Screen Candidates &rarr;
+        </button>
+
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // ── File upload display ───────────────────────────────────────────────────
+    const input    = document.getElementById('resumeInput');
+    const area     = document.getElementById('uploadArea');
+    const fileList = document.getElementById('fileList');
+
+    function showFiles(files) {
+      fileList.innerHTML = '';
+      if (!files.length) return;
+      const header = document.createElement('div');
+      header.className = 'file-count';
+      header.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
+      fileList.appendChild(header);
+      Array.from(files).forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = '<span class="file-icon">&#128196;</span>' + f.name;
+        fileList.appendChild(item);
+      });
+    }
+
+    input.addEventListener('change', () => showFiles(input.files));
+    area.addEventListener('dragover',  e => { e.preventDefault(); area.classList.add('drag-over'); });
+    area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+    area.addEventListener('drop', e => {
+      e.preventDefault();
+      area.classList.remove('drag-over');
+      input.files = e.dataTransfer.files;
+      showFiles(input.files);
+    });
+
+    // ── Skill tag chips ───────────────────────────────────────────────────────
+    const tagContainer  = document.getElementById('tagContainer');
+    const skillTyper    = document.getElementById('skillTyper');
+    const skillsHidden  = document.getElementById('skillsHidden');
+    const skills        = [];
+
+    function updateHidden() {
+      skillsHidden.value = skills.join(',');
+    }
+
+    function addSkill(skill) {
+      skill = skill.trim();
+      if (!skill || skills.includes(skill)) return;
+      skills.push(skill);
+
+      const tag = document.createElement('span');
+      tag.className = 'chip';
+      tag.innerHTML = skill + ' <span class="chip-remove" onclick="removeSkill(\'' + skill + '\', this.parentElement)">&#x2715;</span>';
+      tagContainer.appendChild(tag);
+      skillTyper.value = '';
+      updateHidden();
+    }
+
+    function removeSkill(skill, el) {
+      const i = skills.indexOf(skill);
+      if (i > -1) skills.splice(i, 1);
+      el.remove();
+      updateHidden();
+    }
+
+    skillTyper.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addSkill(skillTyper.value.replace(',','').trim());
+      }
+      if (e.key === 'Backspace' && !skillTyper.value && skills.length) {
+        const last = skills[skills.length - 1];
+        const lastTag = tagContainer.lastElementChild;
+        removeSkill(last, lastTag);
+      }
+    });
+
+    // Show loading on submit
+    document.querySelector('.screen-form').addEventListener('submit', () => {
+      document.getElementById('submitBtn').textContent = 'Processing...';
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,63 @@
+{
+  "features_original": [
+    "college_tier_encoded",
+    "cgpa",
+    "internships",
+    "github_projects",
+    "backlogs",
+    "hackathons",
+    "certifications",
+    "advanced_skills",
+    "intermediate_skills",
+    "basic_skills",
+    "aptitude_score"
+  ],
+  "features_engineered": [
+    "college_tier_encoded",
+    "academic_score",
+    "total_skills",
+    "experience_score",
+    "backlogs"
+  ],
+  "final_features": [
+    "college_tier_encoded",
+    "cgpa",
+    "internships",
+    "github_projects",
+    "backlogs",
+    "hackathons",
+    "certifications",
+    "advanced_skills",
+    "intermediate_skills",
+    "basic_skills",
+    "aptitude_score"
+  ],
+  "target_salary": "salary_lpa",
+  "target_role": "job_role_encoded",
+  "role_classes": [
+    "Backend Developer",
+    "Data Analyst",
+    "Data Scientist",
+    "DevOps Engineer",
+    "Junior Developer",
+    "ML Engineer",
+    "Software Engineer",
+    "Web Developer"
+  ],
+  "tier_mapping": {
+    "Tier 1": 3,
+    "Tier 2": 2,
+    "Tier 3": 1
+  },
+  "role_mapping": {
+    "Backend Developer": 0,
+    "Data Analyst": 1,
+    "Data Scientist": 2,
+    "DevOps Engineer": 3,
+    "Junior Developer": 4,
+    "ML Engineer": 5,
+    "Software Engineer": 6,
+    "Web Developer": 7
+  },
+  "winner": "ORIGINAL"
+}

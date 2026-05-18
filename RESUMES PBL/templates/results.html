@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screening Results — ResumeScreen</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">&#9776;</span>
+          <span class="logo-text">ResumeScreen</span>
+        </div>
+        <a href="/" class="back-btn">&larr; Screen Again</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+
+      <!-- Summary bar -->
+      <div class="summary-bar">
+        <div class="summary-item">
+          <span class="summary-val">{{ total_uploaded }}</span>
+          <span class="summary-lbl">Resumes uploaded</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-val">{{ ranked | length }}</span>
+          <span class="summary-lbl">Candidates ranked</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-val">{{ min_exp }} yrs</span>
+          <span class="summary-lbl">Min experience</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-val">{{ "NER" if use_ner else "Keyword" }}</span>
+          <span class="summary-lbl">Parsing mode</span>
+        </div>
+      </div>
+
+      <!-- Required skills -->
+      {% if required_skills %}
+      <div class="skills-row">
+        <span class="skills-row-label">Required skills:</span>
+        {% for skill in required_skills %}
+          <span class="skill-tag skill-required">{{ skill }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if not ranked %}
+      <!-- Empty state -->
+      <div class="empty-state">
+        <div class="empty-icon">&#128203;</div>
+        <div class="empty-title">No candidates found</div>
+        <div class="empty-sub">Try uploading PDF resumes or adjusting your filters.</div>
+        <a href="/" class="submit-btn" style="display:inline-block;margin-top:1rem;text-decoration:none;width:auto;padding:.7rem 2rem">Go Back</a>
+      </div>
+
+      {% else %}
+
+      <!-- Quick scoreboard — all candidates at a glance -->
+      <div class="results-header">
+        <h2>Ranking Overview — all {{ ranked | length }} candidates</h2>
+      </div>
+
+      <div class="score-list">
+        <div class="score-list-header">
+          <span>#</span>
+          <span>Candidate</span>
+          <span>Experience</span>
+          <span>Skill Match</span>
+          <span>Final Score</span>
+        </div>
+        {% for r in ranked %}
+        <div class="score-list-row">
+          <span class="row-rank">{{ r.rank }}</span>
+          <span>
+            <div class="row-name">{{ r.name or r.filename }}</div>
+            <div class="row-role">{{ r.designation or "—" }}</div>
+          </span>
+          <span>{{ r.experience }} yrs</span>
+          <span>{{ r.match_pct }}%</span>
+          <span class="score-val
+            {% if r.final_score >= 70 %}score-high
+            {% elif r.final_score >= 50 %}score-mid
+            {% else %}score-low{% endif %}
+          ">{{ r.final_score }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Detailed candidate cards -->
+      <div class="results-header" style="margin-top:2rem">
+        <h2>Detailed Profiles</h2>
+      </div>
+
+      {% for r in ranked %}
+      <div class="candidate-card">
+
+        <div class="card-header">
+          <div class="rank-badge">{{ r.rank }}</div>
+          <div class="candidate-meta">
+            <div class="candidate-name">{{ r.name or r.filename }}</div>
+            <div class="candidate-sub">
+              {{ r.designation or "—" }}
+              {% if r.companies %}&nbsp;·&nbsp;{{ r.companies | join(", ") }}{% endif %}
+            </div>
+          </div>
+          <div class="score-block">
+            <div class="score-val
+              {% if r.final_score >= 70 %}score-high
+              {% elif r.final_score >= 50 %}score-mid
+              {% else %}score-low{% endif %}
+            ">{{ r.final_score }}</div>
+            <div class="score-lbl">Final score</div>
+          </div>
+        </div>
+
+        <!-- Score bar -->
+        <div class="score-bar-wrap">
+          <div class="score-bar-bg">
+            <div class="score-bar-fill" style="width:{{ r.final_score }}%;background:{% if r.final_score >= 70 %}#16a34a{% elif r.final_score >= 50 %}#d97706{% else %}#dc2626{% endif %}"></div>
+          </div>
+          <div class="score-explain">
+            Final score = 60% ML score ({{ r.ml_score }}) + 40% skill match ({{ r.match_pct }}%)
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Email</span>
+            <span class="detail-val">{{ r.email or "—" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Phone</span>
+            <span class="detail-val">{{ r.phone or "—" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Experience</span>
+            <span class="detail-val">{{ r.experience }} yrs</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">College</span>
+            <span class="detail-val">{{ r.college or "—" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Degree</span>
+            <span class="detail-val">{{ r.degree or "—" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Grad Year</span>
+            <span class="detail-val">{{ r.grad_year or "—" }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">ML Score</span>
+            <span class="detail-val">{{ r.ml_score }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Skill Match</span>
+            <span class="detail-val">{{ r.match_pct }}% ({{ r.skills_matched | length }}/{{ required_skills | length }})</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">File</span>
+            <span class="detail-val">{{ r.filename }}</span>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        {% if r.skills %}
+        <div class="skills-section">
+          <div class="skills-section-label">Skills ({{ r.skills | length }})</div>
+          <div class="skills-wrap">
+            {% for skill in r.skills %}
+              <span class="skill-tag {% if skill in r.skills_matched %}skill-matched{% endif %}">{{ skill }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+      {% endif %}
+
+    </div>
+  </main>
+
+</body>
+</html>

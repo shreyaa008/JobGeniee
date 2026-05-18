@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobGenie — AI Career Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink:     #0D0D1A;
+      --ink2:    #3D3D5C;
+      --muted:   #8888A8;
+      --bg:      #F7F6FF;
+      --white:   #FFFFFF;
+      --border:  #E4E3F4;
+      --violet:  #5C4EFF;
+      --violet2: #4035CC;
+      --teal:    #00C896;
+      --teal2:   #009E78;
+      --amber:   #FF9F40;
+      --r:       14px;
+      --shadow:  0 2px 32px rgba(92,78,255,.10);
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      position: relative; z-index: 10;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.4rem;
+      color: var(--violet);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px; background: var(--violet);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 18px; height: 18px; fill: white; }
+    .nav-login {
+      background: white; border: 1.5px solid var(--border);
+      padding: 9px 22px; border-radius: 50px;
+      font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: .875rem;
+      color: var(--ink); cursor: pointer;
+      text-decoration: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .nav-login:hover { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(92,78,255,.12); }
+
+    /* ── Hero ── */
+    .hero {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px 80px;
+      position: relative; z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: white; border: 1.5px solid var(--border);
+      padding: 6px 16px; border-radius: 50px;
+      font-size: .78rem; font-weight: 600; color: var(--muted);
+      letter-spacing: .5px; text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .badge-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: clamp(2.4rem, 6vw, 4rem);
+      line-height: 1.1; color: var(--ink);
+      max-width: 700px; margin-bottom: 20px;
+    }
+    h1 em { font-style: normal; color: var(--violet); }
+
+    .hero-sub {
+      font-size: 1.05rem; color: var(--ink2);
+      max-width: 480px; line-height: 1.7; margin-bottom: 56px;
+    }
+
+    /* ── Role cards ── */
+    .roles {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; max-width: 640px; width: 100%;
+    }
+    .role-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      cursor: pointer;
+      text-decoration: none; color: inherit;
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; align-items: flex-start;
+    }
+    .role-card::after {
+      content: '';
+      position: absolute; bottom: -40px; right: -40px;
+      width: 120px; height: 120px; border-radius: 50%;
+      opacity: .06; transition: opacity .25s, transform .25s;
+    }
+    .role-card.student::after  { background: var(--violet); }
+    .role-card.recruiter::after { background: var(--teal); }
+
+    .role-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .role-card.student:hover  { border-color: var(--violet); }
+    .role-card.recruiter:hover { border-color: var(--teal); }
+    .role-card:hover::after { opacity: .12; transform: scale(1.3); }
+
+    .role-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 18px;
+    }
+    .student  .role-icon { background: #EEEBff; }
+    .recruiter .role-icon { background: #E0FBF4; }
+
+    .role-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 1.15rem; margin-bottom: 8px;
+    }
+    .role-desc {
+      font-size: .875rem; color: var(--ink2); line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .role-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: .875rem;
+    }
+    .student  .role-cta { color: var(--violet); }
+    .recruiter .role-cta { color: var(--teal2); }
+    .cta-arrow {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; transition: transform .2s;
+    }
+    .student  .cta-arrow { background: #EEEBff; color: var(--violet); }
+    .recruiter .cta-arrow { background: #E0FBF4; color: var(--teal2); }
+    .role-card:hover .cta-arrow { transform: translateX(4px); }
+
+    /* ── Features ── */
+    .features {
+      display: flex; gap: 32px; justify-content: center;
+      padding: 20px 48px 48px;
+      flex-wrap: wrap; position: relative; z-index: 1;
+    }
+    .feat {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .82rem; color: var(--muted); font-weight: 500;
+    }
+    .feat-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* ── Auth check overlay (hidden by default) ── */
+    #authCheck {
+      position: fixed; inset: 0;
+      background: rgba(13,13,26,.5);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100; backdrop-filter: blur(4px);
+    }
+    #authCheck.show { display: flex; }
+    .auth-modal {
+      background: white; border-radius: 20px;
+      padding: 36px; max-width: 380px; width: 90%;
+      text-align: center;
+    }
+    .auth-modal h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; margin-bottom: 10px; }
+    .auth-modal p  { color: var(--ink2); font-size: .9rem; margin-bottom: 24px; line-height: 1.6; }
+    .btn-primary {
+      display: block; width: 100%;
+      background: var(--violet); color: white;
+      border: none; border-radius: 12px;
+      padding: 13px; font-family: 'DM Sans', sans-serif;
+      font-weight: 600; font-size: 1rem; cursor: pointer;
+      margin-bottom: 10px; transition: background .2s;
+    }
+    .btn-primary:hover { background: var(--violet2); }
+    .btn-ghost {
+      display: block; width: 100%; background: none;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 13px; font-family: 'DM Sans', sans-serif;
+      font-weight: 600; font-size: 1rem; cursor: pointer; color: var(--ink);
+      transition: border-color .2s;
+    }
+    .btn-ghost:hover { border-color: var(--violet); }
+
+    @media (max-width: 560px) {
+      nav { padding: 16px 20px; }
+      .roles { grid-template-columns: 1fr; }
+      .features { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      JobGenie
+    </div>
+    <a href="/login" class="nav-login" id="navLoginBtn">Sign in</a>
+  </nav>
+
+  <main class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      AI-Powered Career Platform
+    </div>
+
+    <h1>Your career decisions,<br><em>powered by AI</em></h1>
+    <p class="hero-sub">
+      Whether you're a student exploring opportunities or a recruiter finding top talent —
+      JobGenie has the right tools for you.
+    </p>
+
+    <div class="roles">
+      <a href="#" class="role-card student" onclick="handleRoleClick('/student', event)">
+        <div class="role-icon">🎓</div>
+        <div class="role-title">I'm a Student</div>
+        <p class="role-desc">Predict your salary, discover ideal roles, and get personalised improvement tips.</p>
+        <div class="role-cta">
+          Get started
+          <span class="cta-arrow">→</span>
+        </div>
+      </a>
+
+      <a href="#" class="role-card recruiter" onclick="handleRoleClick('/recruiter', event)">
+        <div class="role-icon">💼</div>
+        <div class="role-title">I'm a Recruiter</div>
+        <p class="role-desc">Upload resumes, set your requirements, and let AI rank your best candidates instantly.</p>
+        <div class="role-cta">
+          Screen resumes
+          <span class="cta-arrow">→</span>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <div class="features">
+    <div class="feat"><span class="feat-dot" style="background:#5C4EFF"></span>ML-powered predictions</div>
+    <div class="feat"><span class="feat-dot" style="background:#00C896"></span>NER resume parsing</div>
+    <div class="feat"><span class="feat-dot" style="background:#FF9F40"></span>Real-time ranking</div>
+    <div class="feat"><span class="feat-dot" style="background:#E040FB"></span>Secure Firebase auth</div>
+  </div>
+
+  <!-- Auth check modal -->
+  <div id="authCheck">
+    <div class="auth-modal">
+      <h3>Sign in to continue</h3>
+      <p>Create a free account or sign in to access your personalised JobGenie dashboard.</p>
+      <button class="btn-primary" onclick="goToLogin()">Sign in / Sign up</button>
+      <button class="btn-ghost" onclick="closeAuth()">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+    // ── Replace with your Firebase config ──────────────────────────────────
+     const firebaseConfig = {
+    apiKey: "AIzaSyBeLH8eukF7sU8K8StFsZJjcRwEgOFj4sk",
+    authDomain: "jobgenie-8387.firebaseapp.com",
+    projectId: "jobgenie-8387",
+    storageBucket: "jobgenie-8387.firebasestorage.app",
+    messagingSenderId: "898516838623",
+    appId: "1:898516838623:web:4d3a81284b61e5132b616a"
+  };
+    firebase.initializeApp(firebaseConfig);
+
+    let pendingDestination = null;
+
+    // Update nav based on auth state
+    firebase.auth().onAuthStateChanged(user => {
+      const btn = document.getElementById('navLoginBtn');
+      if (user) {
+        btn.textContent = user.displayName ? user.displayName.split(' ')[0] : 'Account';
+        btn.href = '#';
+        btn.onclick = () => firebase.auth().signOut();
+      } else {
+        btn.textContent = 'Sign in';
+        btn.href = '/login';
+        btn.onclick = null;
+      }
+    });
+
+    function handleRoleClick(dest, e) {
+      e.preventDefault();
+      const user = firebase.auth().currentUser;
+      if (user) {
+        window.location.href = dest;
+      } else {
+        pendingDestination = dest;
+        document.getElementById('authCheck').classList.add('show');
+      }
+    }
+
+    function goToLogin() {
+      if (pendingDestination) {
+        sessionStorage.setItem('jobgenie_redirect', pendingDestination);
+      }
+      window.location.href = '/login';
+    }
+
+    function closeAuth() {
+      document.getElementById('authCheck').classList.remove('show');
+    }
+  </script>
+</body>
+</html>
